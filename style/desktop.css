@@ -1,0 +1,120 @@
+::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    font-family: "roboto mono", 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 0;
+}
+
+#canvasWrapper {
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+
+    overflow: scroll;
+}
+
+#canvas {
+    height: 200vh;
+    width: 200vw;
+}
+
+#sidePanelWrapper {
+    position: absolute;
+
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+
+    background-color: rgb(240, 240, 240);
+    opacity: .8;
+    border-radius: 2vh;
+
+    width: 25vw;
+    height: 95vh;
+    
+    margin: 2vh;
+}
+
+#sidePanel {
+    overflow-y: scroll;
+
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    height: 100%;
+}
+
+
+h1 {
+    padding: 0;
+    padding-top: 2vh;
+    padding-bottom: 2vh;
+    margin: 0;
+
+    width: 100%;
+    text-align: center;
+    border-bottom: 2px solid black;
+}
+
+.equationWrapper {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    height: 4rem;
+
+    border-bottom: 1px solid black;
+}
+
+.equationWrapper .activate {
+    aspect-ratio: 1/1;
+    height: 80%;
+
+    padding: 0;
+    margin: 0;
+    margin-left: .7vw;
+}
+
+.equationWrapper .equation {
+    height: 4rem;
+    width: 72%;
+
+    border: none;
+    border-left: 1px solid black;
+    border-radius: 0;
+
+    padding: 0;
+    margin: 0;
+
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: large;
+}
+
+.equation[type="text"] {
+    padding-left: 1.5vw;
+}
+
+#addNewEq {
+    cursor: pointer;
+    font-size: 2.3rem;
+    color: gray;
+
+    padding: 0;
+    padding-bottom: 5vh;
+    margin: 0;
+    margin-top: .5vh;
+    margin-bottom: 50vh;
+
+    width: 100%;
+    text-align: center;
+}
+
+#addNewEq:hover {
+    filter: brightness(.8);
+}
