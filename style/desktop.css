@@ -33,6 +33,7 @@ body {
     border-radius: 2vh;
 
     width: 25vw;
+    min-width: 20rem;
     height: 95vh;
     
     margin: 2vh;
@@ -109,7 +110,7 @@ h1 {
     padding-bottom: 5vh;
     margin: 0;
     margin-top: .5vh;
-    margin-bottom: 30vh;
+    margin-bottom: 10vh;
 
     width: 100%;
     text-align: center;
