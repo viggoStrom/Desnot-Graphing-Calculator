@@ -50,6 +50,16 @@ class plane {
 
         this.xGridSpacing = 50
         this.yGridSpacing = 50
+
+
+        document.addEventListener("click", event => {
+            const xScroll = document.getElementById("canvasWrapper").scrollLeft
+            console.log(xScroll);
+
+            if (xScroll < 10 || xScroll > this.canvas.width - 100) {
+                canvas.width += 500
+            }
+        })
     }
 
     drawAxes = () => {
@@ -67,6 +77,26 @@ class plane {
         this.ctx.lineTo(this.xCenter, this.height)
         this.ctx.stroke()
         this.ctx.closePath()
+    }
+
+    drawNum = () => {
+        this.ctx.fillStyle = "black"
+        this.ctx.textAlign = "center"
+        this.ctx.font = "15px Arial"
+
+        for (let index = this.xCenter - this.xGridSpacing * Math.floor(this.xCenter / this.xGridSpacing); index < this.width; index += this.xGridSpacing) {
+            const x = index
+            const y = this.yCenter - 10
+
+            this.ctx.fillText(((index - this.xCenter) / this.xGridSpacing).toFixed(0), x, y)
+        }
+
+        for (let index = this.yCenter - this.yGridSpacing * Math.floor(this.yCenter / this.yGridSpacing); index < this.height; index += this.yGridSpacing) {
+            const x = this.xCenter + 10
+            const y = index
+
+            this.ctx.fillText(((this.yCenter - index) / this.yGridSpacing).toFixed(0), x, y)
+        }
     }
 
     drawGrid = () => {
@@ -94,7 +124,10 @@ class plane {
         this.ctx.lineWidth = 3
 
         const y = (x) => {
-            return -this.yGridSpacing * (0.05 * x**2 + 2)
+            let c = this.xGridSpacing
+            return -Math.sin(x / c) * this.yGridSpacing
+            return -((x ** 2) / c - 4 * c)
+            return -(0.0002 * x ** 4 - .4 * x ** 2 + 3 * this.yGridSpacing)
         }
 
         this.ctx.beginPath()
@@ -111,4 +144,5 @@ const canvas = new plane()
 
 canvas.drawGrid()
 canvas.drawAxes()
+canvas.drawNum()
 canvas.drawFunc()
