@@ -1,34 +1,6 @@
 document.getElementById("canvasWrapper").scrollLeft = 600
 document.getElementById("canvasWrapper").scrollTop = 350
 
-
-const addEqSlot = () => {
-    const wrapper = document.createElement("div")
-    wrapper.classList.add("equationWrapper")
-
-    const checkbox = document.createElement("input")
-    checkbox.type = "checkbox"
-    checkbox.checked = true
-    checkbox.classList.add("activate")
-    checkbox.setAttribute("onchange", "equation(event)")
-
-    const text = document.createElement("input")
-    text.type = "text"
-    text.classList.add("equation")
-    text.setAttribute("onchange", "equation(event)")
-
-    wrapper.appendChild(checkbox)
-    wrapper.appendChild(text)
-
-    document.getElementById("sidePanel").insertBefore(wrapper, document.querySelector("div#addNewEq"))
-
-    document.querySelectorAll(".equation")[document.querySelectorAll(".equation").length - 1].focus()
-}
-
-addEqSlot()
-addEqSlot()
-document.querySelectorAll(".equation")[0].focus()
-
 class plane {
     constructor() {
         /** @type {HTMLCanvasElement} */
@@ -50,8 +22,10 @@ class plane {
         this.availableColors = ["red", "green", "blue"]
         this.usedColors = []
 
-        this.equations = []
+        this.equations = {}
 
+        this.ctx.fillStyle = "black"
+        this.ctx.fillRect(0, 0, this.width, this.height)
 
         document.addEventListener("click", event => {
             const xScroll = document.getElementById("canvasWrapper").scrollLeft
@@ -66,7 +40,7 @@ class plane {
         else if (num == 0)
             return 1
         else {
-            return (num * f(num - 1))
+            return (num * this.factorial(num - 1))
         }
     }
 
@@ -85,7 +59,7 @@ class plane {
     }
 
     drawAxes = () => {
-        this.ctx.strokeStyle = "black"
+        this.ctx.strokeStyle = "grey"
         this.ctx.lineWidth = 1
 
         this.ctx.beginPath()
@@ -102,23 +76,48 @@ class plane {
     }
 
     drawNum = () => {
-        this.ctx.fillStyle = "black"
-        this.ctx.textAlign = "left"
-        this.ctx.font = "15px Arial"
+        this.ctx.textAlign = "center"
 
         for (let index = this.xCenter - this.xGridSpacing * Math.floor(this.xCenter / this.xGridSpacing); index < this.width; index += this.xGridSpacing) {
             const x = index
-            const y = this.yCenter - 8
+            const y = this.yCenter + 20
+            const num = ((index - this.xCenter) / this.xGridSpacing).toFixed(0)
 
-            this.ctx.fillText(((index - this.xCenter) / this.xGridSpacing).toFixed(0), x, y)
+            if (num != 0) {
+                this.ctx.font = "17px Arial"
+                this.ctx.fillStyle = "black"
+                this.ctx.fillText(num, x, y + 1)
+
+                this.ctx.font = "15px Arial"
+                this.ctx.fillStyle = "white"
+                this.ctx.fillText(num, x, y)
+            }
         }
+
+        this.ctx.textAlign = "right"
 
         for (let index = this.yCenter - this.yGridSpacing * Math.floor(this.yCenter / this.yGridSpacing); index < this.height; index += this.yGridSpacing) {
-            const x = this.xCenter + 8
-            const y = index
+            const x = this.xCenter - 7
+            const y = index + 4
+            const num = ((this.yCenter - index) / this.yGridSpacing).toFixed(0)
 
-            this.ctx.fillText(((this.yCenter - index) / this.yGridSpacing).toFixed(0), x, y)
+            if (num != 0) {
+                this.ctx.font = "17px Arial"
+                this.ctx.fillStyle = "black"
+                this.ctx.fillText(num, x, y + 1)
+
+                this.ctx.font = "15px Arial"
+                this.ctx.fillStyle = "white"
+                this.ctx.fillText(num, x, y)
+            }
         }
+        this.ctx.font = "17px Arial"
+        this.ctx.fillStyle = "black"
+        this.ctx.fillText("0", this.xCenter - 7, this.yCenter + 21)
+
+        this.ctx.font = "15px Arial"
+        this.ctx.fillStyle = "white"
+        this.ctx.fillText("0", this.xCenter - 7, this.yCenter + 20)
     }
 
     drawGrid = () => {
@@ -142,10 +141,13 @@ class plane {
     }
 
     drawFunc = (func) => {
-        // func = func.replace(/^[^0-9xX]*([0-9]+|xX)[^0-9xX]*|[^\d()+\-*\/%!^xX]/g, "") // add = and equation type later
-        func = func.replace(/[^xX0-9+\-*/^.!()%]|([+\-*/^.%]+$)/g, "") // add = and equation type later
-        // func = func.replace(/^[^xX0-9+\-*/^.!%()]*(-?(?<![\-+*/(^])xX|\d+\.?\d*)(?![\d(])[^xX0-9+\-*/^.!()%]*|[^\d()+\-*\/%!^xX]/g, "") // add = and equation type later
-
+        func = func.replace(/[^xX0-9+\-|*/^.!()%]|sin|cos|tan|asin|acos|atan|log|lg|ln|([+\-*/^.%]+$)/g, "") // add = and equation type later
+        func = func.replace("-", "-1*")
+        func = func.replace("^", "**")
+        func = func.replace(/\b(\d+)([xX])\b|\b([xX])(\d+)\b/g, "$1*$2")
+        func = func.replace(/(\b\d+|\b[0-9xX])(?=\s*!)/g, match => {
+            return `this.factorial(${match})`
+        }).replace("!", "")
 
         this.ctx.strokeStyle = this.pickRandomColor()
         this.ctx.lineWidth = 3
@@ -155,9 +157,9 @@ class plane {
             x = x / c
 
             try {
+                console.log(func);
                 -eval(func) * c
             } catch (error) {
-                console.log(func);
                 return console.log("Invalid function");
             }
 
@@ -173,22 +175,63 @@ class plane {
         this.ctx.stroke()
         this.ctx.closePath()
     }
+}
 
-    getFieldData = (index) => {
-        return document.getElementsByClassName("equation")[index].value
+class equationClass {
+    constructor(canvas, id) {
+        this.canvas = canvas
+        this.id = id
+
+        this.createEqElement()
+    }
+
+    createEqElement = () => {
+        const wrapper = document.createElement("div")
+        wrapper.classList.add("equationWrapper")
+
+        const checkbox = document.createElement("input")
+        checkbox.type = "checkbox"
+        checkbox.checked = true
+        checkbox.classList.add("activate")
+        checkbox.id = this.id
+        checkbox.setAttribute("onchange", "equation(event)")
+
+        const text = document.createElement("input")
+        text.type = "text"
+        text.classList.add("equation")
+        text.id = this.id
+        text.setAttribute("onchange", "equation(event)")
+
+        wrapper.appendChild(checkbox)
+        wrapper.appendChild(text)
+
+        document.getElementById("sidePanel").insertBefore(wrapper, document.querySelector("div#addNewEq"))
+
+        document.querySelectorAll(".equation")[document.querySelectorAll(".equation").length - 1].focus()
+    }
+
+    graph = (func) => {
+        this.canvas.drawFunc(func)
     }
 }
 
+// the function that gets called by the html element
 const equation = (event) => {
     src = event.srcElement
-    console.log("object");
 
     if (src.type == "checkbox") {
         // do stuff
     }
     else if (src.type == "text") {
-        canvas.drawFunc(src.value)
+        console.log(canvas.equations[src.id]);
+        canvas.equations[src.id].graph(src.value)
     }
+}
+
+// called by the plus button
+const newEq = () => {
+    const id = Date.now()
+    canvas.equations[id] = new equationClass(canvas, id)
 }
 
 // window.onbeforeunload = function (event) {
@@ -201,6 +244,3 @@ const canvas = new plane()
 canvas.drawGrid()
 canvas.drawAxes()
 canvas.drawNum()
-
-// canvas.drawFunc("x**2-2")
-// canvas.drawFunc("x-1")
