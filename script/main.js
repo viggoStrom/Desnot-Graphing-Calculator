@@ -26,12 +26,6 @@ class plane {
 
         this.ctx.fillStyle = "black"
         this.ctx.fillRect(0, 0, this.width, this.height)
-
-        document.addEventListener("click", event => {
-            const xScroll = document.getElementById("canvasWrapper").scrollLeft
-            const yScroll = document.getElementById("canvasWrapper").scrollTop
-            console.log(xScroll, yScroll);
-        })
     }
 
     factorial = (num) => {
@@ -141,25 +135,18 @@ class plane {
     }
 
     drawFunc = (eq) => {
-        // eq.func = eq.func.replace(/[^xX0-9+\-|*/^.!()%]|sin|cos|tan|asin|acos|atan|log|lg|ln|([+\-*/^.%]+$)/g, "") // add = and equation type later
-        // eq.func = eq.func.replace("-", "-1*")
-        // eq.func = eq.func.replace("^", "**")
-        // eq.func = eq.func.replace(/\b(\d+)([xX])\b|\b([xX])(\d+)\b/g, "$1*$2")
-        // eq.func = eq.func.replace(/(\b\d+|\b[0-9xX])(?=\s*!)/g, match => {
-        //     return `this.factorial(${match})`
-        // }).replace("!", "")
-
         const y = (x) => {
             let c = this.xGridSpacing
             x = x / c
 
-            try {
-                -eval(eq.func) * c
-            } catch (error) {
-                return console.log("Invalid function");
+            if (eq.func == "") {
+                return
             }
-
-            return -eval(eq.func) * c
+            try {
+                return -eval(eq.func) * c
+            } catch (error) {
+                return
+            }
         }
 
         this.ctx.strokeStyle = eq.color
@@ -168,7 +155,7 @@ class plane {
         this.ctx.beginPath()
         for (let index = 0; index < this.width; index++) {
             const x = index - this.xCenter
-            this.ctx.lineTo(index, this.yCenter + y(x))
+            this.ctx.lineTo(index, this.yCenter + y(x) * (this.yGridSpacing / this.xGridSpacing))
         }
         this.ctx.stroke()
         this.ctx.closePath()
@@ -199,47 +186,51 @@ class equationClass {
     }
 
     createEqElement = () => {
-        this.mainWrapper = document.createElement("div")
-        this.mainWrapper.classList.add("equationWrapper")
-
         const checkbox = document.createElement("input")
+        checkbox.setAttribute("onchange", "equation(event)")
+        checkbox.classList.add("activate")
         checkbox.type = "checkbox"
         checkbox.checked = true
-        checkbox.classList.add("activate")
         checkbox.id = this.id
-        checkbox.setAttribute("onchange", "equation(event)")
 
         const text = document.createElement("input")
-        text.type = "text"
-        text.classList.add("equation")
-        text.id = this.id
         text.setAttribute("onchange", "equation(event)")
+        text.classList.add("equation")
+        text.type = "text"
+        text.id = this.id
 
         const del = document.createElement("img")
-        del.classList.add("delete")
-        del.id = this.id
         del.setAttribute("onclick", "equation(event)")
+        del.classList.add("delete")
+        del.classList.add("icon")
+        del.id = this.id
         del.src = "assets/delete_FILL0_wght400_GRAD0_opsz48.svg"
         del.alt = "Del"
 
         const confirm = document.createElement("img")
-        del.classList.add("confirm")
-        del.id = this.id
-        del.setAttribute("onclick", "equation(event)")
-        del.src = "assets/delete_FILL0_wght400_GRAD0_opsz48.svg"
-        del.alt = "confirm"
+        confirm.setAttribute("onclick", "equation(event)")
+        confirm.classList.add("confirm")
+        del.classList.add("icon")
+        confirm.id = this.id
+        confirm.src = "assets/done_FILL0_wght400_GRAD0_opsz48.svg"
+        confirm.alt = "Yes"
 
         const cancel = document.createElement("img")
-        del.classList.add("cancel")
-        del.id = this.id
-        del.setAttribute("onclick", "equation(event)")
-        del.src = "assets/delete_FILL0_wght400_GRAD0_opsz48.svg"
-        del.alt = "cancel"
+        cancel.setAttribute("onclick", "equation(event)")
+        cancel.classList.add("cancel")
+        del.classList.add("icon")
+        cancel.id = this.id
+        cancel.src = "assets/close_FILL0_wght400_GRAD0_opsz48.svg"
+        cancel.alt = "No"
 
         const iconWrapper = document.createElement("div")
         iconWrapper.classList.add("iconWrapper")
         iconWrapper.appendChild(del)
+        iconWrapper.appendChild(cancel)
+        iconWrapper.appendChild(confirm)
 
+        this.mainWrapper = document.createElement("div")
+        this.mainWrapper.classList.add("equationWrapper")
         this.mainWrapper.appendChild(checkbox)
         this.mainWrapper.appendChild(text)
         this.mainWrapper.appendChild(iconWrapper)
@@ -251,6 +242,8 @@ class equationClass {
 
     delete = () => {
         this.mainWrapper.remove()
+        delete this.canvas.equations[this.id]
+        this.canvas.drawAll()
     }
 }
 
@@ -262,7 +255,7 @@ const equation = (event) => {
         // do stuff
     }
     else if (event.type == "click") {
-        canvas.equations.equations[src.id].delete()
+        canvas.equations[src.id].delete()
     }
     else if (src.type == "text") {
         let func = src.value

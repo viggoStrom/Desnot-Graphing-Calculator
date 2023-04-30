@@ -52,6 +52,8 @@ body {
 
 
 h1 {
+    user-select: none;
+
     padding: 0;
     padding-top: 2vh;
     padding-bottom: 2vh;
@@ -104,9 +106,11 @@ h1 {
 }
 
 .equationWrapper .icon {
-    filter: invert(18%) sepia(0%) saturate(786%) hue-rotate(211deg) brightness(96%) contrast(96%);    
+    filter: invert(18%) sepia(0%) saturate(786%) hue-rotate(211deg) brightness(96%) contrast(96%);
     height: 3rem;
     cursor: pointer;
+    user-select: none;
+    pointer-events: auto;
 }
 
 .equationWrapper .icon:hover {
@@ -114,8 +118,7 @@ h1 {
 }
 
 .confirm,
-.cancel 
-{
+.cancel {
     display: none;
 }
 
@@ -128,6 +131,7 @@ h1 {
     width: 100%;
     height: 4rem;
     left: 0;
+    pointer-events: none;
 }
 
 .equation[type="text"] {
