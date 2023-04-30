@@ -140,32 +140,30 @@ class plane {
         }
     }
 
-    drawFunc = (func) => {
-        func = func.replace(/[^xX0-9+\-|*/^.!()%]|sin|cos|tan|asin|acos|atan|log|lg|ln|([+\-*/^.%]+$)/g, "") // add = and equation type later
-        func = func.replace("-", "-1*")
-        func = func.replace("^", "**")
-        func = func.replace(/\b(\d+)([xX])\b|\b([xX])(\d+)\b/g, "$1*$2")
-        func = func.replace(/(\b\d+|\b[0-9xX])(?=\s*!)/g, match => {
-            return `this.factorial(${match})`
-        }).replace("!", "")
-
-        this.ctx.strokeStyle = this.pickRandomColor()
-        this.ctx.lineWidth = 3
+    drawFunc = (eq) => {
+        // eq.func = eq.func.replace(/[^xX0-9+\-|*/^.!()%]|sin|cos|tan|asin|acos|atan|log|lg|ln|([+\-*/^.%]+$)/g, "") // add = and equation type later
+        // eq.func = eq.func.replace("-", "-1*")
+        // eq.func = eq.func.replace("^", "**")
+        // eq.func = eq.func.replace(/\b(\d+)([xX])\b|\b([xX])(\d+)\b/g, "$1*$2")
+        // eq.func = eq.func.replace(/(\b\d+|\b[0-9xX])(?=\s*!)/g, match => {
+        //     return `this.factorial(${match})`
+        // }).replace("!", "")
 
         const y = (x) => {
             let c = this.xGridSpacing
             x = x / c
 
             try {
-                console.log(func);
-                -eval(func) * c
+                -eval(eq.func) * c
             } catch (error) {
                 return console.log("Invalid function");
             }
 
-            this.equations.push(func)
-            return -eval(func) * c
+            return -eval(eq.func) * c
         }
+
+        this.ctx.strokeStyle = eq.color
+        this.ctx.lineWidth = 3
 
         this.ctx.beginPath()
         for (let index = 0; index < this.width; index++) {
@@ -175,19 +173,34 @@ class plane {
         this.ctx.stroke()
         this.ctx.closePath()
     }
+
+    drawAll = () => {
+        this.ctx.fillStyle = "black"
+        this.ctx.fillRect(0, 0, this.width, this.height)
+
+        this.drawGrid()
+        this.drawAxes()
+        this.drawNum()
+
+        Object.values(this.equations).forEach(eq => {
+            this.drawFunc(eq)
+        });
+    }
 }
 
 class equationClass {
     constructor(canvas, id) {
         this.canvas = canvas
         this.id = id
+        this.func = ""
+        this.color = this.canvas.pickRandomColor()
 
         this.createEqElement()
     }
 
     createEqElement = () => {
-        const wrapper = document.createElement("div")
-        wrapper.classList.add("equationWrapper")
+        this.mainWrapper = document.createElement("div")
+        this.mainWrapper.classList.add("equationWrapper")
 
         const checkbox = document.createElement("input")
         checkbox.type = "checkbox"
@@ -202,29 +215,67 @@ class equationClass {
         text.id = this.id
         text.setAttribute("onchange", "equation(event)")
 
-        wrapper.appendChild(checkbox)
-        wrapper.appendChild(text)
+        const del = document.createElement("img")
+        del.classList.add("delete")
+        del.id = this.id
+        del.setAttribute("onclick", "equation(event)")
+        del.src = "assets/delete_FILL0_wght400_GRAD0_opsz48.svg"
+        del.alt = "Del"
 
-        document.getElementById("sidePanel").insertBefore(wrapper, document.querySelector("div#addNewEq"))
+        const confirm = document.createElement("img")
+        del.classList.add("confirm")
+        del.id = this.id
+        del.setAttribute("onclick", "equation(event)")
+        del.src = "assets/delete_FILL0_wght400_GRAD0_opsz48.svg"
+        del.alt = "confirm"
+
+        const cancel = document.createElement("img")
+        del.classList.add("cancel")
+        del.id = this.id
+        del.setAttribute("onclick", "equation(event)")
+        del.src = "assets/delete_FILL0_wght400_GRAD0_opsz48.svg"
+        del.alt = "cancel"
+
+        const iconWrapper = document.createElement("div")
+        iconWrapper.classList.add("iconWrapper")
+        iconWrapper.appendChild(del)
+
+        this.mainWrapper.appendChild(checkbox)
+        this.mainWrapper.appendChild(text)
+        this.mainWrapper.appendChild(iconWrapper)
+
+        document.getElementById("sidePanel").insertBefore(this.mainWrapper, document.querySelector("div#addNewEq"))
 
         document.querySelectorAll(".equation")[document.querySelectorAll(".equation").length - 1].focus()
     }
 
-    graph = (func) => {
-        this.canvas.drawFunc(func)
+    delete = () => {
+        this.mainWrapper.remove()
     }
 }
 
-// the function that gets called by the html element
+// the function that gets called onchange by the html elements
 const equation = (event) => {
     src = event.srcElement
 
     if (src.type == "checkbox") {
         // do stuff
     }
+    else if (event.type == "click") {
+        canvas.equations.equations[src.id].delete()
+    }
     else if (src.type == "text") {
-        console.log(canvas.equations[src.id]);
-        canvas.equations[src.id].graph(src.value)
+        let func = src.value
+        func = func.replace(/[^xX0-9+\-|*/^.!()%]|sin|cos|tan|asin|acos|atan|log|lg|ln|([+\-*/^.%]+$)/g, "") // add = and equation type later
+        func = func.replace("-", "-1*")
+        func = func.replace("^", "**")
+        func = func.replace(/\b(\d+)([xX])\b|\b([xX])(\d+)\b/g, "$1*$2")
+        func = func.replace(/(\b\d+|\b[0-9xX])(?=\s*!)/g, match => {
+            return `this.factorial(${match})`
+        }).replace("!", "")
+
+        canvas.equations[src.id].func = func
+        canvas.drawAll()
     }
 }
 
@@ -241,6 +292,8 @@ const newEq = () => {
 
 const canvas = new plane()
 
-canvas.drawGrid()
-canvas.drawAxes()
-canvas.drawNum()
+newEq()
+newEq()
+document.getElementsByClassName("equation")[0].focus()
+
+canvas.drawAll()
