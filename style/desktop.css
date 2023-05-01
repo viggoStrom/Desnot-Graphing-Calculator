@@ -14,11 +14,17 @@ body {
     width: 100vw;
 
     overflow: scroll;
+
+    padding: 0;
+    margin: 0;
 }
 
 #canvas {
     height: 200vh;
     width: 200vw;
+
+    padding: 0;
+    margin: 0;
 }
 
 #sidePanelWrapper {
@@ -115,11 +121,6 @@ h1 {
 
 .equationWrapper .icon:hover {
     scale: 1.05;
-}
-
-.confirm,
-.cancel {
-    display: none;
 }
 
 .iconWrapper {

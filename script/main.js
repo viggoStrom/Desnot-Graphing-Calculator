@@ -19,7 +19,7 @@ class plane {
         this.xGridSpacing = 50
         this.yGridSpacing = 50
 
-        this.availableColors = ["red", "green", "blue"]
+        this.availableColors = ["red", "green", "blue", "brown", "yellow", "orange", "white", "purple", "pink"]
         this.usedColors = []
 
         this.equations = {}
@@ -135,6 +135,12 @@ class plane {
     }
 
     drawFunc = (eq) => {
+        let start
+        if (Date.now() - start < 100) {
+            return
+        }
+        start = Date.now()
+
         const y = (x) => {
             let c = this.xGridSpacing
             x = x / c
@@ -210,39 +216,53 @@ class equationClass {
         const confirm = document.createElement("img")
         confirm.setAttribute("onclick", "equation(event)")
         confirm.classList.add("confirm")
-        del.classList.add("icon")
+        confirm.classList.add("icon")
         confirm.id = this.id
         confirm.src = "assets/done_FILL0_wght400_GRAD0_opsz48.svg"
         confirm.alt = "Yes"
+        confirm.style.display = "none"
 
         const cancel = document.createElement("img")
         cancel.setAttribute("onclick", "equation(event)")
         cancel.classList.add("cancel")
-        del.classList.add("icon")
+        cancel.classList.add("icon")
         cancel.id = this.id
         cancel.src = "assets/close_FILL0_wght400_GRAD0_opsz48.svg"
         cancel.alt = "No"
+        cancel.style.display = "none"
 
-        const iconWrapper = document.createElement("div")
-        iconWrapper.classList.add("iconWrapper")
-        iconWrapper.appendChild(del)
-        iconWrapper.appendChild(cancel)
-        iconWrapper.appendChild(confirm)
+
+        this.iconWrapper = document.createElement("div")
+        this.iconWrapper.classList.add("iconWrapper")
+        this.iconWrapper.appendChild(del)
+        this.iconWrapper.appendChild(confirm)
+        this.iconWrapper.appendChild(cancel)
 
         this.mainWrapper = document.createElement("div")
         this.mainWrapper.classList.add("equationWrapper")
         this.mainWrapper.appendChild(checkbox)
         this.mainWrapper.appendChild(text)
-        this.mainWrapper.appendChild(iconWrapper)
+        this.mainWrapper.appendChild(this.iconWrapper)
 
         document.getElementById("sidePanel").insertBefore(this.mainWrapper, document.querySelector("div#addNewEq"))
 
         document.querySelectorAll(".equation")[document.querySelectorAll(".equation").length - 1].focus()
     }
 
-    delete = () => {
-        this.mainWrapper.remove()
-        delete this.canvas.equations[this.id]
+    delete = (src) => {
+        if (src.classList[0] == "confirm") {
+            this.mainWrapper.remove()
+            delete this.canvas.equations[this.id]
+        }
+
+        this.iconWrapper.childNodes.forEach(icon => {
+            if (icon.style.display != "none") {
+                icon.style.display = "none"
+            } else {
+                icon.style.display = "block"
+            }
+        })
+
         this.canvas.drawAll()
     }
 }
@@ -255,7 +275,7 @@ const equation = (event) => {
         // do stuff
     }
     else if (event.type == "click") {
-        canvas.equations[src.id].delete()
+        canvas.equations[src.id].delete(src)
     }
     else if (src.type == "text") {
         let func = src.value
