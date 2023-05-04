@@ -245,7 +245,6 @@ class equationClass {
         this.mainWrapper.appendChild(this.iconWrapper)
 
         document.getElementById("sidePanel").insertBefore(this.mainWrapper, document.querySelector("div#addNewEq"))
-
         document.querySelectorAll(".equation")[document.querySelectorAll(".equation").length - 1].focus()
     }
 
